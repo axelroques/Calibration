@@ -6,6 +6,7 @@ from __init__ import CONFIG
 
 from datetime import datetime
 import pandas as pd
+import numpy as np
 import pickle
 import pygame
 
@@ -15,15 +16,19 @@ class Experiment:
     def __init__(self) -> None:
 
         # Monitor info
-        # TO DO
+        self.pixel_size = CONFIG['monitor']['monitor_width'] / \
+            CONFIG['monitor']['horizontal_pixel_resolution']
+        self.viewing_distance = CONFIG['monitor']['viewing_distance']
 
         # Initiate PyGame
         pygame.init()
         pygame.display.set_caption('Calibration')
         self.screen = pygame.display.set_mode(
-            (CONFIG['global']['width'], CONFIG['global']['height'])
+            (CONFIG['global']['window_width'],
+             CONFIG['global']['window_height'])
         )
 
+        # Main loop
         completed = False
         while not completed:
 
@@ -41,6 +46,9 @@ class Experiment:
             )
 
             completed = not self.calibration.early_break
+
+        # Generate export data from the calibration experiment
+        self._generateData()
 
         # Export menu
         self._export_menu = ExportMenu(self.screen)
@@ -70,6 +78,36 @@ class Experiment:
         except KeyError:
             raise RuntimeError('How did that happen?!')
 
+    def _generateData(self):
+        """
+        Generate data from the stimulus movements.
+        """
+
+        # Initialize time series data structure for export
+        self.data = {
+            't': [],
+            'x': [],
+            'y': []
+        }
+
+        time_offset = 0
+        for i, movement in enumerate(self.calibration.getStimulusMovements()):
+
+            if i == 0:
+                self.data['t'] += movement.timestamps
+                self.data['x'] += movement.positions['x']
+                self.data['y'] += movement.positions['y']
+
+            # First time and position is a duplicate from the previous movement
+            else:
+                self.data['t'] += [
+                    t + time_offset for t in movement.timestamps[1:]
+                ]
+                self.data['x'] += movement.positions['x'][1:]
+                self.data['y'] += movement.positions['y'][1:]
+
+            time_offset += movement.timestamps[-1]
+
         return
 
     def _exportData(self):
@@ -78,7 +116,11 @@ class Experiment:
         """
 
         # Get time series data
-        data = pd.DataFrame(data=self.calibration.data)
+        data = pd.DataFrame(data={
+            't': self.data['t'],
+            'x': self._pixToDeg(self.data['x']),
+            'y': self._pixToDeg(self.data['y'])
+        })
 
         # Get stimulus movements
         movements = self.calibration.getStimulusMovements()
@@ -96,6 +138,14 @@ class Experiment:
             pickle.dump(movements, f)
 
         return
+
+    def _pixToDeg(self, distance):
+        """
+        Convert pixels to degrees of visual angle.
+        """
+        return np.arctan2(
+            (np.array(distance)*self.pixel_size), self.viewing_distance
+        ) * 180 / np.pi
 
 
 if __name__ == '__main__':

@@ -16,15 +16,15 @@ class Target(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect()
 
         # Initialize position at the center of the screen
-        self.x = (CONFIG['global']['width']-self.surf.get_width())/2
-        self.y = (CONFIG['global']['height']-self.surf.get_height())/2
+        self.x = (CONFIG['global']['window_width']-self.surf.get_width())/2
+        self.y = (CONFIG['global']['window_height']-self.surf.get_height())/2
         self.rect.x = self.x
         self.rect.y = self.y
 
     def _getCenteredPos(self):
         return np.array([
-            self.x+self.surf.get_width()/2,
-            self.y+self.surf.get_height()/2
+            self.x+self.surf.get_width()/2-CONFIG['global']['window_width']/2,
+            CONFIG['global']['window_height']/2-self.y-self.surf.get_height()/2
         ])
 
     def _getPos(self):
@@ -59,10 +59,10 @@ class Target(pygame.sprite.Sprite):
 
         end_pos = np.array([
             np.random.random()*(
-                CONFIG['global']['width']-self.surf.get_width()
+                CONFIG['global']['window_width']-self.surf.get_width()
             ),
             np.random.random()*(
-                CONFIG['global']['height']-self.surf.get_height()
+                CONFIG['global']['window_height']-self.surf.get_height()
             )
         ])
         distance = end_pos-start_pos
@@ -93,10 +93,10 @@ class Target(pygame.sprite.Sprite):
         while not velocity_condition_respected:
             end_pos = np.array([
                 np.random.random()*(
-                    CONFIG['global']['width']-self.surf.get_width()
+                    CONFIG['global']['window_width']-self.surf.get_width()
                 ),
                 np.random.random()*(
-                    CONFIG['global']['height']-self.surf.get_height()
+                    CONFIG['global']['window_height']-self.surf.get_height()
                 )
             ])
             duration = np.random.uniform(

@@ -1,9 +1,15 @@
 # Global parameters
 global:
-  width: 1280
-  height: 720
+  window_width: 1280
+  window_height: 720
   bg_color: [19, 19, 19]
-  exp_duration: 0.2 # in min
+  exp_duration: 0.06 # in min
+
+# Monitor
+monitor:
+  horizontal_pixel_resolution: 1980 # in pixels
+  monitor_width: 400 # in mm
+  viewing_distance: 1000 # in mm
 
 # Fixation parameters
 fixation:

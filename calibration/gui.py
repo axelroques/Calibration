@@ -8,8 +8,8 @@ class Button:
 
     def __init__(self, x, y):
         self.surf = pygame.Surface(
-            (CONFIG['global']['width']/4,
-             CONFIG['global']['height']/7)
+            (CONFIG['global']['window_width']/4,
+             CONFIG['global']['window_height']/7)
         )
         self.surf.fill((255, 255, 255))
         self.rect = self.surf.get_rect()

@@ -14,8 +14,8 @@ class Menu:
 
         # Screen parameters
         self.screen = screen
-        self.w = CONFIG['global']['width']
-        self.h = CONFIG['global']['height']
+        self.w = CONFIG['global']['window_width']
+        self.h = CONFIG['global']['window_height']
 
     def getChoice(self):
         """

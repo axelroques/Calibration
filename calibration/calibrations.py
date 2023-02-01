@@ -17,13 +17,6 @@ class Calibration:
         self.running = True
         self.fps = 100
 
-        # Initialize time series data structure for export
-        self.data = {
-            't': [],
-            'x': [],
-            'y': []
-        }
-
     def getStimulusMovements(self):
         """
         Return stimulus movements.
@@ -55,11 +48,6 @@ class Calibration:
                 except RuntimeWarning:
                     self.early_break = True
                     break
-
-                # Update time series data
-                self.data['t'] += movement.timestamps
-                self.data['x'] += movement.positions['x']
-                self.data['y'] += movement.positions['y']
 
             # Once all movements are done, exit
             self.running = False
@@ -143,8 +131,9 @@ class Calibration:
             timestamps.append(time)
 
             # Get position
-            positions['x'].append(self.target.x)
-            positions['y'].append(self.target.y)
+            target_pos = self.target._getCenteredPos()
+            positions['x'].append(target_pos[0])
+            positions['y'].append(target_pos[1])
 
             # Update clock
             self.clock.tick(self.fps)
@@ -191,8 +180,9 @@ class Calibration:
             timestamps.append(time)
 
             # Get position
-            positions['x'].append(self.target.x)
-            positions['y'].append(self.target.y)
+            target_pos = self.target._getCenteredPos()
+            positions['x'].append(target_pos[0])
+            positions['y'].append(target_pos[1])
 
             # Move the target towards its destination
             if time >= duration/2:
@@ -349,8 +339,9 @@ class TernaryCalibration(Calibration):
             timestamps.append(time)
 
             # Get position
-            positions['x'].append(self.target.x)
-            positions['y'].append(self.target.y)
+            target_pos = self.target._getCenteredPos()
+            positions['x'].append(target_pos[0])
+            positions['y'].append(target_pos[1])
 
             # Move the target towards its destination
             deltaT = self.clock.get_time()/1000
@@ -370,8 +361,9 @@ class TernaryCalibration(Calibration):
         # Final movement
         self.target.updatePos(*movement.end_pos)
         timestamps.append(time)
-        positions['x'].append(self.target.x)
-        positions['y'].append(self.target.y)
+        target_pos = self.target._getCenteredPos()
+        positions['x'].append(target_pos[0])
+        positions['y'].append(target_pos[1])
 
         # Populate movement info
         movement.addTimestamps(timestamps)
