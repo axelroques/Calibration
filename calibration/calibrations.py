@@ -10,6 +10,9 @@ class Calibration:
 
     def __init__(self, screen) -> None:
 
+        # Exit condition
+        self.early_break = False
+
         self.screen = screen
         self.running = True
         self.fps = 100
@@ -50,6 +53,7 @@ class Calibration:
                     self._updateTargetBehavior(movement)
 
                 except RuntimeWarning:
+                    self.early_break = True
                     break
 
                 # Update time series data
@@ -206,11 +210,20 @@ class Calibration:
 
         return
 
+    def _handlePursuit(self, movement):
+        """
+        Default function that will be overwitten if 
+        necessary.
+        """
+        return
+
 
 class BinaryCalibration(Calibration):
 
     def __init__(self, screen) -> None:
         super().__init__(screen)
+
+        self.type = 'binary_calibration'
 
         self._run()
 
@@ -259,6 +272,8 @@ class TernaryCalibration(Calibration):
 
     def __init__(self, screen) -> None:
         super().__init__(screen)
+
+        self.type = 'ternary_calibration'
 
         self._run()
 

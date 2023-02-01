@@ -1,10 +1,12 @@
 
-from __init__ import CONFIG
 from calibrations import TernaryCalibration
 from calibrations import BinaryCalibration
-from gui import Button, Text
+from menus import MainMenu, ExportMenu
+from __init__ import CONFIG
 
+from datetime import datetime
 import pandas as pd
+import pickle
 import pygame
 
 
@@ -18,120 +20,40 @@ class Experiment:
         # Initiate PyGame
         pygame.init()
         pygame.display.set_caption('Calibration')
+        self.screen = pygame.display.set_mode(
+            (CONFIG['global']['width'], CONFIG['global']['height'])
+        )
 
-        # Main menu display
-        width = CONFIG['global']['width']
-        height = CONFIG['global']['height']
-        self.screen = pygame.display.set_mode((width, height))
-        self.buttons = [
-            Button(x, y)
-            for x, y in zip(
-                [width/2-width/8, width/2-width/8],
-                [height/2-height/7-height/18, height/2+height/18]
+        completed = False
+        while not completed:
+
+            # Main menu
+            self._main_menu = MainMenu(self.screen)
+            self.calibration_id = self._main_menu.getChoice()
+
+            # Exit condition
+            if self._main_menu.exit_condition:
+                return
+
+            # Calibration experiment
+            self.calibration = self._launchCalibration(
+                self.calibration_id, self.screen
             )
-        ]
-        self.texts = [
-            Text(text, button) for text, button
-            in zip(
-                ['Binary calibration', 'Ternary calibration'],
-                self.buttons
-            )
-        ]
 
-        # Await user input
-        self._awaitSelection()
+            completed = not self.calibration.early_break
 
-    def getStimulusMovements(self):
-        """
-        Return stimulus movements.
-        """
-        return self.calibration.getStimulusMovements()
+        # Export menu
+        self._export_menu = ExportMenu(self.screen)
 
-    def getData(self):
-        """
-        Return stimulus movements as a pandas DataFrame.
-        """
-        return pd.DataFrame(data=self.calibration.data)
-
-    def _awaitSelection(self):
-        """
-        Wait for the user to click on one of the buttons.
-        """
-
-        # Game clock
-        clock = pygame.time.Clock()
-
-        click = False
-        self.running = True
-        while self.running:
-
-            # Mouse control
-            mx, my = pygame.mouse.get_pos()
-
-            # Detect clicks on menu buttons
-            for i, button in enumerate(self.buttons):
-                if button.rect.collidepoint((mx, my)):
-                    if click:
-                        self.calibration = self._launchCalibration(
-                            i, self.screen
-                        )
-
-            click = False
-            # Event queue
-            for event in pygame.event.get():
-
-                # Exit conditions
-                self._catchExit(event)
-
-                # Mouse click
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        click = True
-
-            # Draw
-            self._draw()
-
-            # 10 fps
-            clock.tick(10)
-
-        return
-
-    def _catchExit(self, event):
-        """
-        Exit handler.
-        """
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                self.running = False
-        if event.type == pygame.QUIT:
-            self.running = False
-
-        return
-
-    def _draw(self):
-        """
-        Draw function.
-        """
-
-        # Draw background
-        self.screen.fill(CONFIG['global']['bg_color'])
-
-        # Draw buttons
-        for button in self.buttons:
-            self.screen.blit(button.surf, button.rect)
-
-        # Draw texts
-        for text in self.texts:
-            self.screen.blit(text.surf, text.rect)
-
-        # Display
-        pygame.display.flip()
-
-        return
+        # Exit condition
+        if self._export_menu.exit_condition:
+            return
+            # Otherwise export the data
+        else:
+            self._exportData()
 
     @staticmethod
-    def _launchCalibration(button_id, screen):
+    def _launchCalibration(calibration_id, screen):
         """
         Launch binary or ternary calibration depending
         on which button was pressed.
@@ -143,15 +65,39 @@ class Experiment:
         }
 
         try:
-            return calibrations[button_id](screen)
+            return calibrations[calibration_id](screen)
 
         except KeyError:
             raise RuntimeError('How did that happen?!')
+
+        return
+
+    def _exportData(self):
+        """
+        Export data from the calibration
+        """
+
+        # Get time series data
+        data = pd.DataFrame(data=self.calibration.data)
+
+        # Get stimulus movements
+        movements = self.calibration.getStimulusMovements()
+
+        # Export them...
+        now = datetime.now()
+        date = now.strftime("%Y_%m_%d-%H_%M_%S")
+        filename = f'{date}-{self.calibration.type}'
+
+        # ... as a csv file ...
+        data.to_csv(f'results/{filename}.csv', index=False)
+
+        # ... and as a pickle file
+        with open(f'results/{filename}.pkl', 'wb') as f:
+            pickle.dump(movements, f)
+
+        return
 
 
 if __name__ == '__main__':
 
     exp = Experiment()
-    movements = exp.getStimulusMovements()
-    data = exp.getData()
-    print(data)
