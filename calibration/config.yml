@@ -1,0 +1,23 @@
+# Global parameters
+global:
+  width: 1280
+  height: 720
+  bg_color: [19, 19, 19]
+  exp_duration: 0.5 # in min
+
+# Fixation parameters
+fixation:
+  min_duration: 2 # in s
+  max_duration: 4 # in s
+
+# Saccade parameters
+saccade:
+  min_duration: 0.06 # in s
+  max_duration: 0.15 # in s
+
+# Pursuit parameters
+pursuit:
+  min_duration: 1 # in s
+  max_duration: 3 # in s
+  min_vel: 100 # in px/s
+  max_vel: 300 # in px/s
