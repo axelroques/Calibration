@@ -3,7 +3,7 @@ global:
   window_width: 1280
   window_height: 720
   bg_color: [19, 19, 19]
-  exp_duration: 0.06 # in min
+  exp_duration: 0.2 # in min
 
 # Monitor
 monitor:

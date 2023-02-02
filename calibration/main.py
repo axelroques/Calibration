@@ -123,7 +123,9 @@ class Experiment:
         })
 
         # Get stimulus movements
+        experiment = {key: val for key, val in CONFIG.items()}
         movements = self.calibration.getStimulusMovements()
+        experiment['movements'] = [movement.__dict__ for movement in movements]
 
         # Export them...
         now = datetime.now()
@@ -135,7 +137,7 @@ class Experiment:
 
         # ... and as a pickle file
         with open(f'results/{filename}.pkl', 'wb') as f:
-            pickle.dump(movements, f)
+            pickle.dump(experiment, f)
 
         return
 
