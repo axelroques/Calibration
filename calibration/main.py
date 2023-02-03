@@ -90,23 +90,11 @@ class Experiment:
             'y': []
         }
 
-        time_offset = 0
-        for i, movement in enumerate(self.calibration.getStimulusMovements()):
+        for movement in self.calibration.getStimulusMovements():
 
-            if i == 0:
-                self.data['t'] += movement.timestamps
-                self.data['x'] += movement.positions['x']
-                self.data['y'] += movement.positions['y']
-
-            # First time and position is a duplicate from the previous movement
-            else:
-                self.data['t'] += [
-                    t + time_offset for t in movement.timestamps[1:]
-                ]
-                self.data['x'] += movement.positions['x'][1:]
-                self.data['y'] += movement.positions['y'][1:]
-
-            time_offset += movement.timestamps[-1]
+            self.data['t'] += movement.timestamps
+            self.data['x'] += movement.positions['x']
+            self.data['y'] += movement.positions['y']
 
         return
 
@@ -144,6 +132,9 @@ class Experiment:
     def _pixToDeg(self, distance):
         """
         Convert pixels to degrees of visual angle.
+
+        Distance is the distance to the center of the screen.
+        Thus, the (x, y) coordinates must be centered beforehand.
         """
         return np.arctan2(
             (np.array(distance)*self.pixel_size), self.viewing_distance

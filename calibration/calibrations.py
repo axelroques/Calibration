@@ -13,9 +13,13 @@ class Calibration:
         # Exit condition
         self.early_break = False
 
+        # General parameters
         self.screen = screen
         self.running = True
         self.fps = 100
+
+        # Movement parameter
+        self.time = 0
 
     def getStimulusMovements(self):
         """
@@ -113,12 +117,12 @@ class Calibration:
             'y': []
         }
 
-        time = 0
+        start_time = self.time
         duration = movement.duration*1000
         # print(
         #     f'Fixation: t={duration/1000}s, amplitude={movement.amplitude}, start={movement.start_pos}, end={movement.end_pos}, vel={movement.velocity}'
         # )
-        while time < duration:
+        while self.time < start_time + duration:
 
             # Draw
             self._draw()
@@ -128,7 +132,7 @@ class Calibration:
                 self._catchExit(event)
 
             # Get timestamp
-            timestamps.append(time)
+            timestamps.append(self.time)
 
             # Get position
             target_pos = self.target._getCenteredPos()
@@ -139,7 +143,7 @@ class Calibration:
             self.clock.tick(self.fps)
 
             # Increment time
-            time += self.clock.get_time()
+            self.time += self.clock.get_time()
 
         # Populate movement info
         movement.addTimestamps(timestamps)
@@ -162,12 +166,12 @@ class Calibration:
             'y': []
         }
 
-        time = 0
+        start_time = self.time
         duration = movement.duration*1000
         # print(
         #     f'Saccade: t={duration/1000}s, amplitude={movement.amplitude}, start={movement.start_pos}, end={movement.end_pos}, vel={movement.velocity}'
         # )
-        while time < duration:
+        while self.time < start_time + duration:
 
             # Draw
             self._draw()
@@ -177,7 +181,7 @@ class Calibration:
                 self._catchExit(event)
 
             # Get timestamp
-            timestamps.append(time)
+            timestamps.append(self.time)
 
             # Get position
             target_pos = self.target._getCenteredPos()
@@ -185,14 +189,14 @@ class Calibration:
             positions['y'].append(target_pos[1])
 
             # Move the target towards its destination
-            if time >= duration/2:
+            if self.time >= start_time + duration/2:
                 self.target.updatePos(*movement.end_pos)
 
             # Update clock
             self.clock.tick(self.fps)
 
             # Increment time
-            time += self.clock.get_time()
+            self.time += self.clock.get_time()
 
         # Populate movement info
         movement.addTimestamps(timestamps)
@@ -321,12 +325,12 @@ class TernaryCalibration(Calibration):
             'y': []
         }
 
-        time = 0
+        start_time = self.time
         duration = movement.duration*1000
         # print(
         #     f'Pursuit: t={duration/1000}s, amplitude={movement.amplitude}, start={movement.start_pos}, end={movement.end_pos}, vel={movement.velocity}'
         # )
-        while time < duration:
+        while self.time < start_time + duration:
 
             # Draw
             self._draw()
@@ -336,7 +340,7 @@ class TernaryCalibration(Calibration):
                 self._catchExit(event)
 
             # Get timestamp
-            timestamps.append(time)
+            timestamps.append(self.time)
 
             # Get position
             target_pos = self.target._getCenteredPos()
@@ -356,11 +360,11 @@ class TernaryCalibration(Calibration):
             self.clock.tick(self.fps)
 
             # Increment time
-            time += self.clock.get_time()
+            self.time += self.clock.get_time()
 
         # Final movement
         self.target.updatePos(*movement.end_pos)
-        timestamps.append(time)
+        timestamps.append(self.time)
         target_pos = self.target._getCenteredPos()
         positions['x'].append(target_pos[0])
         positions['y'].append(target_pos[1])
